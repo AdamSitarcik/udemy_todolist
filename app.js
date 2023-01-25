@@ -13,7 +13,10 @@ app.use(bodyParser.urlencoded({
 app.use(express.static("public"));
 
 mongoose.set('strictQuery', false);
-mongoose.connect('mongodb://localhost:27017/todolistDB');
+// mongoose.connect('mongodb://localhost:27017/todolistDB');
+mongoose.connect('mongodb://127.0.0.1:27017/todolistDB');
+
+
 
 const itemSchema = new mongoose.Schema({
     content: String
@@ -35,36 +38,40 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
-// Item.insertMany(defaultItems, function(err) {
-//     if(err){
-//         console.log(err);
-//     }
-//     else {
-//         console.log('Succesfully added default items!');
-//     }
-// });
-
 
 
 app.get("/", function (req, res) {
-    let items = [];
+
     Item.find({}, function (err, results) {
-        res.render("list", {
-            listTitle: 'Today',
-            newListItems: results
-        });
+        if (results.length === 0) {
+            Item.insertMany(defaultItems, function (err) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log('Succesfully added default items!');
+                }
+            });
+            res.redirect('/');
+        } else {
+            res.render("list", {
+                listTitle: 'Today',
+                newListItems: results
+            });
+        }
     });
 
 });
 
 app.post("/", function (req, res) {
-    let item = req.body.newTask;
-    // items.push(item);
+    let itemContent = req.body.newTask;
     if (req.body.list === "Work") {
-        workItems.push(item);
+        // workItems.push(item);
         res.redirect("/work");
     } else {
-        items.push(item);
+        let item = new Item({
+            content: itemContent
+        });
+        item.save();
         res.redirect("/");
     }
 });
