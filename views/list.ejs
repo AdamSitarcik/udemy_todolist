@@ -4,16 +4,17 @@
 </div>
 
 <div class="box">
-    <% for(var i = 0; i < newListItems.length; i++) { %>
+    <% newListItems.forEach(function(item) { %>
     <div class="item">
         <input type="checkbox">
-        <p><%= newListItems[i] %></p>
+        <span><%= item.content %> </span>
+        <button class="deleteItemBtn">x</button>
     </div>
-    <% } %>
+    <% }) %>
 
     <form class="item" action="/" method="post">
         <input type="text" name="newTask" placeholder="New item" autofocus autocomplete="off">
-        <button type="submit" name="list" value="<%= listTitle %>">+</button>
+        <button type="submit" name="list" value="<%= listTitle %>" class="addBtn">+</button>
     </form>
 </div>
 

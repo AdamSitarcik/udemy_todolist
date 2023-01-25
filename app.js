@@ -16,20 +16,43 @@ mongoose.set('strictQuery', false);
 mongoose.connect('mongodb://localhost:27017/todolistDB');
 
 const itemSchema = new mongoose.Schema({
-    name: String
+    content: String
 });
 
 const Item = mongoose.model('Item', itemSchema);
 
-let items = [];
-let workItems = [];
+const item1 = new Item({
+    content: 'Welcome to your todolist!'
+});
+
+const item2 = new Item({
+    content: 'Hit + to add a new item'
+});
+
+const item3 = new Item({
+    content: 'Hit this to check-out an item'
+});
+
+const defaultItems = [item1, item2, item3];
+
+// Item.insertMany(defaultItems, function(err) {
+//     if(err){
+//         console.log(err);
+//     }
+//     else {
+//         console.log('Succesfully added default items!');
+//     }
+// });
+
+
 
 app.get("/", function (req, res) {
-    let day = date.getDate();
-
-    res.render("list", {
-        listTitle: day,
-        newListItems: items
+    let items = [];
+    Item.find({}, function (err, results) {
+        res.render("list", {
+            listTitle: 'Today',
+            newListItems: results
+        });
     });
 
 });
