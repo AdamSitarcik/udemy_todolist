@@ -64,17 +64,27 @@ app.get("/", function (req, res) {
 
 app.post("/", function (req, res) {
     let itemContent = req.body.newTask;
-    if (req.body.list === "Work") {
-        // workItems.push(item);
-        res.redirect("/work");
-    } else {
-        let item = new Item({
-            content: itemContent
-        });
-        item.save();
-        res.redirect("/");
-    }
+    let item = new Item({
+        content: itemContent
+    });
+
+    item.save();
+    res.redirect("/");
 });
+
+app.post("/delete", function(req, res) {
+    const itemToDeleteID = req.body.deleteItem;
+    Item.findByIdAndRemove(itemToDeleteID, function(err) {
+        if(err) {
+            console.log(err);
+        }
+        else {
+            console.log(`Removed item ${itemToDeleteID}`);
+        }
+    });
+
+    res.redirect("/");
+})
 
 app.get("/work", function (req, res) {
     res.render("list", {

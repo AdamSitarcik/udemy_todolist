@@ -5,11 +5,13 @@
 
 <div class="box">
     <% newListItems.forEach(function(item) { %>
-    <div class="item">
-        <input type="checkbox">
-        <span><%= item.content %> </span>
-        <button class="deleteItemBtn">x</button>
-    </div>
+    <form action="/delete" method="post">
+        <div class="item">
+            <input type="checkbox">
+            <span><%= item.content %> </span>
+            <button type="submit" value="<%= item._id %>" name="deleteItem" class="deleteItemBtn">x</button>
+        </div>
+    </form>
     <% }) %>
 
     <form class="item" action="/" method="post">
