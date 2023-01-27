@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const date = require(__dirname + "/date.js");
+const _ = require("lodash");
 
 const app = express();
 
@@ -67,31 +67,25 @@ app.get("/", function (req, res) {
 });
 
 app.get("/:customListName", function (req, res) {
-    const customListName = req.params.customListName;
+    const customListName = _.capitalize(req.params.customListName);
     List.findOne({
         name: customListName
-    }, function (err, foundList) {
-        console.log(foundList);
+    }, async function (err, foundList) {
         if (err) {
             console.log(err);
+        } else if (foundList) {
+            res.render("list", {
+                listTitle: foundList.name,
+                newListItems: foundList.items
+            });
         } else {
-            if (foundList) {
-                if (foundList.name === customListName) {
-                    res.render("list", {
-                        listTitle: foundList.name,
-                        newListItems: foundList.items
-                    });
-                }
-            } else {
-                const list = new List({
-                    name: customListName,
-                    items: defaultItems
-                });
+            const list = new List({
+                name: customListName,
+                items: defaultItems
+            });
 
-                list.save();
-                console.log('saved');
-                res.redirect("/" + customListName);
-            }
+            await list.save();
+            res.redirect("/" + customListName);
         }
     });
 });
@@ -150,22 +144,6 @@ app.post("/delete", function (req, res) {
             }
         });
     }
-});
-
-// app.get("/work", function (req, res) {
-//     res.render("list", {
-//         listTitle: "Work",
-//         newListItems: workItems
-//     })
-// });
-
-// app.post("/work", function (req, res) {
-//     let item = req.body.newTask;
-//     res.redirect("/work");
-// });
-
-app.get("/about", function (req, res) {
-    res.render("about");
 });
 
 app.listen(3000, function () {
