@@ -44,7 +44,8 @@ input[type="checkbox"] {
   margin: 20px;
 }
 
-p, span {
+p,
+span {
   margin: 0;
   padding: 20px;
   font-size: 20px;

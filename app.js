@@ -13,10 +13,7 @@ app.use(bodyParser.urlencoded({
 app.use(express.static("public"));
 
 mongoose.set('strictQuery', false);
-// mongoose.connect('mongodb://localhost:27017/todolistDB');
 mongoose.connect('mongodb://127.0.0.1:27017/todolistDB');
-
-
 
 const itemSchema = new mongoose.Schema({
     content: String
@@ -38,10 +35,7 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
-
-
 app.get("/", function (req, res) {
-
     Item.find({}, function (err, results) {
         if (results.length === 0) {
             Item.insertMany(defaultItems, function (err) {
@@ -59,7 +53,6 @@ app.get("/", function (req, res) {
             });
         }
     });
-
 });
 
 app.post("/", function (req, res) {
@@ -72,13 +65,12 @@ app.post("/", function (req, res) {
     res.redirect("/");
 });
 
-app.post("/delete", function(req, res) {
+app.post("/delete", function (req, res) {
     const itemToDeleteID = req.body.deleteItem;
-    Item.findByIdAndRemove(itemToDeleteID, function(err) {
-        if(err) {
+    Item.findByIdAndRemove(itemToDeleteID, function (err) {
+        if (err) {
             console.log(err);
-        }
-        else {
+        } else {
             console.log(`Removed item ${itemToDeleteID}`);
         }
     });
