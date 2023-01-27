@@ -12,28 +12,39 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public"));
 
-mongoose.set('strictQuery', false);
-mongoose.connect('mongodb://127.0.0.1:27017/todolistDB');
+mongoose.set("strictQuery", false);
+mongoose.connect("mongodb://127.0.0.1:27017/todolistDB");
 
 const itemSchema = new mongoose.Schema({
     content: String
 });
 
-const Item = mongoose.model('Item', itemSchema);
+const Item = mongoose.model("Item", itemSchema);
 
 const item1 = new Item({
-    content: 'Welcome to your todolist!'
+    content: "Welcome to your todolist!"
 });
 
 const item2 = new Item({
-    content: 'Hit + to add a new item'
+    content: "Hit + to add a new item"
 });
 
 const item3 = new Item({
-    content: 'Hit this to check-out an item'
+    content: "<-- Hit this to check-out an item"
 });
 
-const defaultItems = [item1, item2, item3];
+const item4 = new Item({
+    content: "Hit this to delete an item -->"
+})
+
+const defaultItems = [item1, item2, item3, item4];
+
+const listSchema = {
+    name: String,
+    items: [itemSchema]
+}
+
+const List = mongoose.model("List", listSchema);
 
 app.get("/", function (req, res) {
     Item.find({}, function (err, results) {
@@ -42,17 +53,43 @@ app.get("/", function (req, res) {
                 if (err) {
                     console.log(err);
                 } else {
-                    console.log('Succesfully added default items!');
+                    console.log("Succesfully added default items!");
                 }
             });
-            res.redirect('/');
+            res.redirect("/");
         } else {
             res.render("list", {
-                listTitle: 'Today',
+                listTitle: "Today",
                 newListItems: results
             });
         }
     });
+});
+
+app.get("/:customListName", function (req, res) {
+    const customListName = req.params.customListName;
+    List.findOne({
+        name: customListName
+    }, function (err, foundList) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (!foundList) {
+                const list = new List({
+                    name: customListName,
+                    items: defaultItems
+                });
+
+                list.save();
+                res.redirect("/" + customListName);
+            } else {
+                res.render("list", {
+                    listTitle: foundList.name,
+                    newListItems: foundList.items
+                });
+            }
+        }
+    })
 });
 
 app.post("/", function (req, res) {
@@ -65,6 +102,25 @@ app.post("/", function (req, res) {
     res.redirect("/");
 });
 
+app.post("/:customListName", function (req, res) {
+    let customListName = req.params.customListName;
+    let customItemContent = req.body.newTask;
+
+    List.findOne({
+        name: customListName
+    }, function (err, foundList) {
+        if (err) {
+            console.log(err);
+        } else {
+            foundList.create({
+                content: customItemContent
+            });
+        }
+    });
+
+    res.redirect("/" + customListName);
+});
+
 app.post("/delete", function (req, res) {
     const itemToDeleteID = req.body.deleteItem;
     Item.findByIdAndRemove(itemToDeleteID, function (err) {
@@ -74,9 +130,9 @@ app.post("/delete", function (req, res) {
             console.log(`Removed item ${itemToDeleteID}`);
         }
     });
-
+    console.log(req);
     res.redirect("/");
-})
+});
 
 app.get("/work", function (req, res) {
     res.render("list", {
