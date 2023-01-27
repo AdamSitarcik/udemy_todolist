@@ -48,7 +48,7 @@ const List = mongoose.model("List", listSchema);
 
 app.get("/", function (req, res) {
     Item.find({}, function (err, results) {
-        if (results.length === 0) {
+        if (!results) {
             Item.insertMany(defaultItems, function (err) {
                 if (err) {
                     console.log(err);
@@ -71,25 +71,29 @@ app.get("/:customListName", function (req, res) {
     List.findOne({
         name: customListName
     }, function (err, foundList) {
+        console.log(foundList);
         if (err) {
             console.log(err);
         } else {
-            if (!foundList) {
+            if (foundList) {
+                if (foundList.name === customListName) {
+                    res.render("list", {
+                        listTitle: foundList.name,
+                        newListItems: foundList.items
+                    });
+                }
+            } else {
                 const list = new List({
                     name: customListName,
                     items: defaultItems
                 });
 
                 list.save();
+                console.log('saved');
                 res.redirect("/" + customListName);
-            } else {
-                res.render("list", {
-                    listTitle: foundList.name,
-                    newListItems: foundList.items
-                });
             }
         }
-    })
+    });
 });
 
 app.post("/", function (req, res) {
@@ -103,9 +107,10 @@ app.post("/", function (req, res) {
     if (listName === "Today") {
         item.save();
         res.redirect("/");
-    }
-    else {
-        List.findOne({name: listName}, function(err, foundList) {
+    } else {
+        List.findOne({
+            name: listName
+        }, function (err, foundList) {
             foundList.items.push(item);
             foundList.save();
             res.redirect("/" + listName);
@@ -113,49 +118,51 @@ app.post("/", function (req, res) {
     }
 });
 
-app.post("/:customListName", function (req, res) {
-    let customListName = req.params.customListName;
-    let customItemContent = req.body.newTask;
-
-    List.findOne({
-        name: customListName
-    }, function (err, foundList) {
-        if (err) {
-            console.log(err);
-        } else {
-            foundList.create({
-                content: customItemContent
-            });
-        }
-    });
-
-    res.redirect("/" + customListName);
-});
-
 app.post("/delete", function (req, res) {
     const itemToDeleteID = req.body.deleteItem;
-    Item.findByIdAndRemove(itemToDeleteID, function (err) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log(`Removed item ${itemToDeleteID}`);
-        }
-    });
-    console.log(req);
-    res.redirect("/");
+    const listName = req.body.listName;
+
+    if (listName === "Today") {
+        console.log(Item);
+        Item.findByIdAndRemove(itemToDeleteID, function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(`Removed item ${itemToDeleteID}`);
+            }
+        });
+        res.redirect("/");
+    } else {
+        List.findOneAndUpdate({
+            name: listName
+        }, {
+            $pull: {
+                items: {
+                    _id: itemToDeleteID
+                }
+            }
+        }, function (err, foundList) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log('Removed');
+                res.redirect("/" + listName);
+            }
+        });
+    }
 });
 
-app.get("/work", function (req, res) {
-    res.render("list", {
-        listTitle: "Work",
-        newListItems: workItems
-    })
-});
+// app.get("/work", function (req, res) {
+//     res.render("list", {
+//         listTitle: "Work",
+//         newListItems: workItems
+//     })
+// });
 
-app.post("/work", function (req, res) {
-    let item = req.body.newTask;
-    res.redirect("/work");
-});
+// app.post("/work", function (req, res) {
+//     let item = req.body.newTask;
+//     res.redirect("/work");
+// });
 
 app.get("/about", function (req, res) {
     res.render("about");

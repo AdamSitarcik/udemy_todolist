@@ -11,6 +11,7 @@
             <span><%= item.content %> </span>
             <button type="submit" value="<%= item._id %>" name="deleteItem" class="deleteItemBtn">x</button>
         </div>
+        <input type="hidden" name="listName" value="<%= listTitle %>"></input>
     </form>
     <% }) %>
 
