@@ -83,7 +83,7 @@ app.get("/:customListName", function (req, res) {
         } else {
             const list = new List({
                 name: customListName,
-                items: defaultItems
+                items: [] //defaultItems
             });
 
             await list.save();
