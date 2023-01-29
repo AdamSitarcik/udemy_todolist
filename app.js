@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const _ = require("lodash");
+const env = require("dotenv").config().parsed;
 
 const app = express();
 
@@ -12,7 +13,9 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public"));
 
-const db_uri = "mongodb+srv://AdamSitarcik:AAmDAPc8m1YrO5yL@cluster0.tkw5cwj.mongodb.net/todolistDB";
+const mongodbPassword = process.env.MONGODB_PASSWORD || env.MONGODB_PASSWORD;
+
+const db_uri = "mongodb+srv://AdamSitarcik:" + mongodbPassword + "@cluster0.tkw5cwj.mongodb.net/todolistDB";
 
 mongoose.set("strictQuery", false);
 mongoose.connect(db_uri);
@@ -148,6 +151,8 @@ app.post("/delete", function (req, res) {
     }
 });
 
-app.listen(3000, function () {
+const port = process.env.PORT || 3000;
+
+app.listen(port, function () {
     console.log("Server running on port 3000");
 });
